@@ -76,52 +76,27 @@ if __name__ == '__main__':
             docs.append(file.read_text(encoding='unicode_escape'))
     print("bbc news data loaded...\n -sample:", docs[0])
 
-    # inference using cosine distance
-    obj = Classifier(distance_metric="cosine")
-    predictions = [label_names[obj.predict(doc)] for doc in docs]
+    for distance_ in ("cosine", "euclidean"):
+        obj = Classifier(distance_metric=distance_)
+        predictions = [label_names[obj.predict(doc)] for doc in docs]
 
-    # classification report
-    report = metrics.classification_report(y_true=labels, y_pred=predictions, labels=label_names, output_dict=True)
-    report = pd.DataFrame([
-        {
-            "label": key,
-            "precision": value["precision"],
-            "recall": value["recall"],
-            "support": value["support"]
-        }
-        for key, value in report.items()
-        if key not in ["accuracy", "macro avg", "weighted avg"]
-    ])
-    print(
-        tabulate(
-            report,
-            headers="keys",
-            tablefmt="psql"
-        ),
-        file=open("./classification_report_cosine_distance.txt", "w")
-    )
-
-    # inference using euclidean distance
-    obj = Classifier(distance_metric="euclidean")
-    predictions = [label_names[obj.predict(doc)] for doc in docs]
-
-    # classification report
-    report = metrics.classification_report(y_true=labels, y_pred=predictions, labels=label_names, output_dict=True)
-    report = pd.DataFrame([
-        {
-            "label": key,
-            "precision": value["precision"],
-            "recall": value["recall"],
-            "support": value["support"]
-        }
-        for key, value in report.items()
-        if key not in ["accuracy", "macro avg", "weighted avg"]
-    ])
-    print(
-        tabulate(
-            report,
-            headers="keys",
-            tablefmt="psql"
-        ),
-        file=open("./classification_report_euclidean_distance.txt", "w")
-    )
+        # classification report
+        report = metrics.classification_report(y_true=labels, y_pred=predictions, labels=label_names, output_dict=True)
+        report = pd.DataFrame([
+            {
+                "label": key,
+                "precision": value["precision"],
+                "recall": value["recall"],
+                "support": value["support"]
+            }
+            for key, value in report.items()
+            if key not in ["accuracy", "macro avg", "weighted avg"]
+        ])
+        print(
+            tabulate(
+                report,
+                headers="keys",
+                tablefmt="psql"
+            ),
+            file=open("./classification_report_{}_distance.txt".format(distance_), "w")
+        )
